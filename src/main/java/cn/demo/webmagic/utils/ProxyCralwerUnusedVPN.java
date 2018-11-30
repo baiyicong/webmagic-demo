@@ -1,4 +1,8 @@
-package cn.demo.springboot.crawler;
+package cn.demo.webmagic.utils;
+
+import com.alibaba.fastjson.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -6,11 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-
-import com.alibaba.fastjson.JSONObject;
 /**
  * @author baiyicong
  * @date 2018年6月25日
@@ -140,7 +139,6 @@ public class ProxyCralwerUnusedVPN {
         }
     }
 }
-
 
 
 class ProxyInfo {
