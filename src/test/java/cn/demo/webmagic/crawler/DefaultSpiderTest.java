@@ -71,10 +71,10 @@ public class DefaultSpiderTest {
 		Spider.create(new DefaultProcessor(spiderConfig)).addPipeline(new HtmlDataPipeline(Pattern.compile("https?://m.baike.so.com/doc/([\\d-]+).html?([?#].*)?"),1))
 				.addPipeline(new MySqlPipeline(defaultHtmlMapper, spiderConfig.getHtmlTableName()))
 				.setDownloader(httpClientDownloader).addUrl("https://m.baike.so.com")
-				.thread(40).run();
+				.thread(30).run();
 	}
 
-    @Test
+    //@Test
     public void testMbalibWiki() {
         DefaultProxyProvider defaultProxyProvider = new DefaultProxyProviderImpl(null)
                 .setTestUrl("https://wiki.mbalib.com/wiki/%E9%A6%96%E9%A1%B5")

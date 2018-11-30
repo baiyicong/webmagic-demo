@@ -37,7 +37,7 @@ public abstract class DefaultProxyProvider implements ProxyProvider {
     protected Integer minProxyIpsNumber = 20;
 
     // proxyIps队列最大个数,当底于这个数时，会触发测试线程休眠
-    protected Integer maxProxyIpsNumber = 300;
+    protected Integer maxProxyIpsNumber = 100;
 
     // 创建线程池
     protected ExecutorService threadPool = Executors.newFixedThreadPool(checkIpThreadNumber);
@@ -95,13 +95,13 @@ public abstract class DefaultProxyProvider implements ProxyProvider {
                     offerTestProxyIps(listProxyProvider());
                 }
                 while (true) {
-                    if (proxyIps.size() < maxProxyIpsNumber) {
+                    if (proxyIps.size() >= maxProxyIpsNumber) {
                         try {
                             Thread.sleep(10000);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
-                        break;
+                        continue;
                     }
                     Proxy proxy = testProxyIps.pollLast();
                     if (proxy != null) {
