@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * @author baiyicong
  */
-public abstract class DefaultProxyProvider implements ProxyProvider {
+public class DefaultProxyProvider implements ProxyProvider {
     private Logger logger = LoggerFactory.getLogger(getClass());
     // 测试通过的ip
     protected final Deque<Proxy> proxyIps = new ConcurrentLinkedDeque<Proxy>();
@@ -42,13 +42,17 @@ public abstract class DefaultProxyProvider implements ProxyProvider {
     // 创建线程池
     protected ExecutorService threadPool = Executors.newFixedThreadPool(checkIpThreadNumber);
 
-    // 获得新的代理ip,
-    protected abstract List<String> listProxyProvider();
+    private ApiHandler apiHandler;
 
-    public DefaultProxyProvider(List<String> proxyList) {
-        if (proxyList != null) {
-            this.offerTestProxyIps(proxyList);
-        }
+    // 获得新的代理ip,
+    public interface ApiHandler {
+        List<Proxy> getProxies();
+    }
+
+    public DefaultProxyProvider(ApiHandler apiHandler) {
+        this.apiHandler = apiHandler;
+
+        this.offerTestProxyIps(apiHandler.getProxies());
         // 校验ip
         asyncCheckProxy();
         try {
@@ -78,43 +82,40 @@ public abstract class DefaultProxyProvider implements ProxyProvider {
     }
 
     // 即将测试ip存放点
-    public void offerTestProxyIps(List<String> proxyList) {
+    public void offerTestProxyIps(List<Proxy> proxyList) {
         if (proxyList != null) {
-            for (String proxy : proxyList) {
-                String[] arr = proxy.split(":");
-                testProxyIps.addLast(new Proxy(arr[0], Integer.parseInt(arr[1])));
+            for (Proxy proxy : proxyList) {
+                testProxyIps.addLast(proxy);
             }
         }
     }
 
     private void asyncCheckProxy() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                if (testProxyIps.size() <= 0) {
-                    offerTestProxyIps(listProxyProvider());
-                }
-                while (true) {
-                    if (proxyIps.size() >= maxProxyIpsNumber) {
-                        try {
-                            Thread.sleep(10000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        continue;
-                    }
-                    Proxy proxy = testProxyIps.pollLast();
-                    if (proxy != null && !testProxyIps.contains(proxy)) {
-                        threadTaskCount.incrementAndGet();
-                        CheckProxyTask checkProxyTask = new CheckProxyTask(proxy, testUrl);
-                        threadPool.submit(checkProxyTask);
-                        logger.info("----------------------有效ip个数" + proxyIps.size());
-                    } else if (proxyIps.size() < minProxyIpsNumber) {
-                        offerTestProxyIps(listProxyProvider());
-                    }
-                }
+        new Thread(() -> {
 
+            if (testProxyIps.size() <= 0) {
+                offerTestProxyIps(apiHandler.getProxies());
             }
+            while (true) {
+                if (proxyIps.size() >= maxProxyIpsNumber) {
+                    try {
+                        Thread.sleep(10000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    continue;
+                }
+                Proxy proxy = testProxyIps.pollLast();
+                if (proxy != null && !testProxyIps.contains(proxy)) {
+                    threadTaskCount.incrementAndGet();
+                    CheckProxyTask checkProxyTask = new CheckProxyTask(proxy, testUrl);
+                    threadPool.submit(checkProxyTask);
+                    logger.info("----------------------有效ip个数" + proxyIps.size());
+                } else if (proxyIps.size() < minProxyIpsNumber) {
+                    offerTestProxyIps(apiHandler.getProxies());
+                }
+            }
+
         }).start();
     }
 
