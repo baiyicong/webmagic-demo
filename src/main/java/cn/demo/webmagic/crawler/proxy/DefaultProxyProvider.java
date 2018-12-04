@@ -104,7 +104,7 @@ public abstract class DefaultProxyProvider implements ProxyProvider {
                         continue;
                     }
                     Proxy proxy = testProxyIps.pollLast();
-                    if (proxy != null) {
+                    if (proxy != null && !testProxyIps.contains(proxy)) {
                         threadTaskCount.incrementAndGet();
                         CheckProxyTask checkProxyTask = new CheckProxyTask(proxy, testUrl);
                         threadPool.submit(checkProxyTask);
