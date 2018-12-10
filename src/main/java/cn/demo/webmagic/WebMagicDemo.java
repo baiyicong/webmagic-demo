@@ -4,9 +4,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class SpringBootDemo {
+public class WebMagicDemo {
 	public static void main(String[] args) {
-		SpringApplication.run(SpringBootDemo.class, args);
+		SpringApplication.run(WebMagicDemo.class, args);
 	}
 
 }
